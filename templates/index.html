@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+        #chatbot-container {
+            display: flex;
+            flex-direction: row; /* Changed flex direction to row */
+            justify-content: flex-start; /* Align items to the start */
+            height: 100%;
+            padding: 20px; /* Add some padding for better visibility */
+            position: relative; /* Add relative positioning to set background image */
+        }
+        #chat-container {
+            text-align: left;
+            max-height: calc(100% - 60px); /* Adjust height to accommodate the input container */
+            overflow-y: auto; /* Enable vertical scrolling */
+            padding: 10px;
+            width: 50%; /* Adjust width for better visibility */
+            background-color: rgba(255, 255, 255, 0.6); /* Adjust background color for better contrast */
+            border-radius: 10px; /* Rounded corners */
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        .message-container {
+            padding: 1px;
+        }
+        .message-container.user {
+            background-color: rgba(208, 240, 208, 0.8);
+            margin-left: 10px; /* Added margin for better separation */
+            border-radius: 10px;
+            margin-bottom: 10px; /* Added margin for better separation */
+        }
+        .message-container.chatbot {
+            background-color: rgba(240, 208, 208, 0.8);
+            margin-right: 10px; /* Added margin for better separation */
+            border-radius: 10px;
+            margin-bottom: 10px; /* Added margin for better separation */
+        }
+        #image-container {
+            width: 50%; /* Set width for image container */
+            height: 100%;
+            position: fixed; /* Make the image container fixed */
+            right: 0;
+            top: 0;
+            background-image: url('https://botnation.ai/site/wp-content/uploads/2022/02/meilleur-chatbot.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+        #input-container {
+            width: 50%; /* Adjust width for better visibility */
+            display: flex;
+            align-items: center;
+            flex-direction: column; /* Change flex direction to column */
+            position: fixed; /* Make the input container fixed */
+            left: 0;
+            bottom: 0; /* Align to the bottom */
+            padding: 20px; /* Add padding for better visibility */
+            z-index: 1; /* Ensure input container is above the scrollbar */
+        }
+        #user-input {
+            flex: 2;
+            padding: 10px;
+            border-radius: 10px;
+            border: 3px solid #ccc;
+            width: 60%;
+            margin-bottom: 10px; /* Add margin for separation */
+        }
+        #send-button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 5px;
+            margin-left: 1px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatbot-container">
+        <div id="chat-container">
+            <h1>Chatbot</h1>
+            <!-- Messages will be dynamically added here -->
+        </div>
+        <div id="input-container">
+            <input type="text" id="user-input">
+            <button id="send-button">Send</button>
+        </div>
+        <div id="image-container"></div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            var userInput = document.getElementById('user-input').value;
+            var chatContainer = document.getElementById('chat-container');
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/chat', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText).response;
+                    var messageContainer = document.createElement('div');
+                    messageContainer.className = 'message-container user';
+                    messageContainer.innerHTML = '<p>User: ' + userInput + '</p>';
+                    chatContainer.appendChild(messageContainer);
+
+                    if (userInput.toLowerCase() === 'clear') {
+                        // Clear the chat
+                        chatContainer.innerHTML = '<h1>Chatbot</h1>';
+                    } else {
+                        var chatbotResponseContainer = document.createElement('div');
+                        chatbotResponseContainer.className = 'message-container chatbot';
+                        chatbotResponseContainer.innerHTML = '<p>Chatbot: ' + response + '</p>';
+                        chatContainer.appendChild(chatbotResponseContainer);
+                    }
+
+                    // Scroll to the bottom after new message is added
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            };
+            xhr.send('user_input=' + userInput);
+            document.getElementById('user-input').value = '';
+        }
+
+        document.getElementById('send-button').addEventListener('click', sendMessage);
+
+        document.getElementById('user-input').addEventListener('keypress', function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
